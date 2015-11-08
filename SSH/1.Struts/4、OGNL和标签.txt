@@ -1,0 +1,95 @@
+本地标签库帮助文档：struts-2.3.24.1\docs（帮助文档）\docs\tag-reference
+
+JSP引入标签库：
+<%@taglib uri="/struts-tags" prefix="s"%>
+
+一、property标签
+
+<body>
+<h1>房屋列表页面</h1>
+<%-- <s:property>的使用 --%>
+<!-- 取出房屋列表中的第一个房屋信息的标题 -->
+房屋列表中的第一个房屋信息的标题：<s:property value="houses[0].title"/><br>
+房屋列表中的第一个房屋信息的标题：<s:property value="houses[0].name" default="默认的房屋信息"/><br>
+
+<%-- <s:property>的value为OGNL表达式 --%>
+<!-- 将OGNL表达式转换为字符串，要添加单引号 -->
+<s:property value="'<hr/>'" escapeHtml="false"/>
+
+二、date标签 添加时间同时可以设置显示格式。
+
+<%-- <s:date>的使用 --%>
+<%-- <s:date>的name为OGNL表达式 --%>
+房屋列表中的第一个房屋信息的发布时间：<s:property value="houses[0].addDate"/><br>
+房屋列表中的第一个房屋信息的发布时间：<s:date name="houses[0].addDate" format="yyyy-MM-dd HH:mm:ss"></s:date><br>
+
+<s:property value="'<hr/>'" escapeHtml="false"/>          //escapeHtml表示转义，默认为true。将其关闭，使<>不被转                                                             义，将字符串<hr/>变成横线打印出来。
+
+三、set标签  简化书写，用变量var代替 
+
+<%-- <s:set>的使用 --%>
+房屋列表中的第一个房屋信息的所处街道的街道名称：<s:property value="houses[0].street.streetName"/><br>
+<s:set var="s" value="houses[0].street"/>
+房屋列表中的第一个房屋信息的所处街道的街道名称：<s:property value="#s.streetName"/><br>
+房屋列表中的第一个房屋信息的所处街道的街道ID：<s:property value="#s.streetId"/><br>
+房屋列表中的第一个房屋信息的所处街道的地区信息：<s:property value="#s.district.districtName"/><br>
+
+<%-- <s:set>的使用:指定scope --%>
+<s:set var="s2" value="houses[0].street" scope="session"/>
+房屋列表中的第一个房屋信息的所处街道的街道名称：<s:property value="#session.s2.streetName"/><br>
+房屋列表中的第一个房屋信息的所处街道的街道ID：<s:property value="#session.s2.streetId"/><br>
+房屋列表中的第一个房屋信息的所处街道的地区信息：<s:property value="#session.s2.district.districtName"/><br>
+<s:property value="'<hr/>'" escapeHtml="false"/>
+
+四、url标签 需要与 a标签（超链接标签）配合使用
+
+<%-- <s:url>的使用 --%>
+<s:url value="house"/><br>                               // 只是生成普通字符串
+<s:url value="house" var="t"/><br>			 //加var后 字符串不再显示
+
+<%-- <s:a>的使用 --%>
+<!-- 观察源代码，发现链接为普通字符串 -->
+<!-- <a href="house">超链接1</a> -->
+<s:a href="#t">超链接1</s:a><br>
+
+<!-- 将字符串转换为OGNL表达式，使用 %{} -->
+<s:a href="%{#t}">超链接2</s:a><br>
+
+五、param标签，用于在打开超链接时传递参数
+
+<%-- <s:param>的使用 --%>
+<%-- <s:param>的value为OGNL表达式 --%>
+<s:url value="house" var="t">
+	<s:param name="str" value="'accp'"></s:param>
+</s:url>
+<s:a href="%{#t}">超链接3</s:a><br>
+
+六、include标签 用于包含另一界面
+
+<%-- <s:include>的使用 --%>
+<%int i=10; %>
+<%=i %>
+<s:include value="include.jsp"/>
+
+七、debug标签
+
+<%-- <s:debug>的使用 --%>
+<s:debug/>
+</body>
+
+八、循环控制
+<!--循环由value指定的houses集合 通过var查找每一个集合内的对象，且要根据变量存放的位置来决定取值时是否要加 #。
+在这里 houseItor 存放在 stack context中（通过debug查看），所以要加#-->
+<s:iterator var="houseItor" value="houses" status="status">
+		<s:if test="#status.even">
+			<tr bgcolor="yellow">
+		</s:if>
+		<s:if test="#status.odd">
+			<tr bgcolor="gray">
+		</s:if>
+				<td><s:property value="#houseItor.houseId"/></td>
+				<td><s:property value="#houseItor.street.streetName"/></td>
+				<td><s:property value="#houseItor.title"/></td>
+				<td><s:date name="#houseItor.addDate" format="yyyy-MM"/></td>
+			</tr>
+</s:iterator>

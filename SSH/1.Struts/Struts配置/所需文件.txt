@@ -1,0 +1,5 @@
+需要用到的jar包
+
+web.xml
+
+struts.xml

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:aop="http://www.springframework.org/schema/aop"
+	     xmlns:tx="http://www.springframework.org/schema/tx"
+	     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+	
+	<!-- action默认scope的属性为多实例。每起一个线程，就会创建一个实例 scope="prototype"-->
+	<bean id="loginAction" class="com.lzq.action.LoginAction" scope="prototype"></bean>
+	
+	<bean id="userManagerAction" class="com.lzq.action.UserManagerAction" scope="prototype"></bean>
+	<bean id="userService" class="com.lzq.service.UserServiceImpl"></bean>
+	<bean id="userDao" class="com.lzq.dao.UserDaoImpl" scope="prototype">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 虚 -->
+	<bean id="iUserDao" class="com.lzq.dao.UserDaoImpl" scope="prototype">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 单文件上传 -->
+	<bean id="uploadAction" class="com.lzq.action.UploadAction"></bean>
+	 
+	<!-- 多文件上传 -->
+	<bean id="uploadsAction" class="com.lzq.action.UploadsAction"></bean>
+	<!-- 文件下载 -->
+	<bean id="downLoadAction" class="com.lzq.action.DownLoadAction"></bean>
+	
+	<bean id="myInterceptor4" class="com.lzq.interceptor.MyInterceptor"></bean>
+	
+	<bean id="LoginAction5" class="com.lzq.action.LoginAction5" scope="prototype"></bean>
+	 
+	 <!-- 拦截器按情况而定 -->
+	<bean id="myInterceptor5" class="com.lzq.interceptor.MyInterceptor"></bean>
+	 <!-- Filter按情况而定 -->
+	<bean id="myFilterTest" class="com.lzq.filter.MyFilter"></bean>
+	 
+</beans>

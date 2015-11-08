@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<!-- 启用spring注解支持 -->
+	<context:annotation-config />
+	<!-- 第一种配置sessionFactory的方法 <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"> 
+		<property name="configLocation"> <value>classpath:config/hibernate.cfg.xml</value> 
+		</property> 如果采用注解的方式注册实体类，则可以采用如下方法来简化注册步骤，并且class为AnnotationSessionFactoryBean 
+		<property name="packagesToScan"> <list> <value>com.lzq.config</value> </list> 
+		</property> </bean> -->
+
+	<!-- 第二种配置sessionFactory的方法 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+		<property name="url" value="jdbc:mysql://localhost:3306/SSH2"></property>
+		<property name="username" value="root"></property>
+		<property name="password" value="root"></property>
+	</bean>
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 设置Hibernate属性 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+
+		<!--如果采用传统的hbm.xml的方式，可以采用如下方式来简化注册hbm.xml的步骤， 并且class为LocalSessionFactoryBean 
+			<property name="configLocation" value="classpath:com/lzq/config/hibernate.cfg.xml"></property> -->
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:/com/lzq/entity/*.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- 事务管理 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<!--第一种配置事务 事务细节 ：事务的传播特性 -->
+	<tx:advice id="txadvice" transaction-manager="transactionManager"> 
+		<tx:attributes> 
+			<tx:method name="add*" propagation="REQUIRED" rollback-for="Exception"/> 
+			<tx:method name="modify*" propagation="REQUIRED" no-rollback-for="myException"/> 
+			<tx:method name="del*" propagation="REQUIRED"/> 
+			<tx:method name="*" read-only="true"/> 
+		</tx:attributes> 
+	</tx:advice> 
+	<!-- 配置参与事务的类  -->
+	<aop:config> 
+		<aop:pointcut expression="execution(* com.lzq.dao.*.*(..))" id="daoMethod"/> 
+		<aop:advisor advice-ref="txadvice" pointcut-ref="daoMethod"/> 
+	</aop:config> 
+
+	<!-- 第二种配置事务 代理 -->
+	<bean id="transactionProxy"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"
+		abstract="true">
+		<!-- 使用cglib方式实现动态代理 <property name="proxyTargetClass" value="true"></property> -->
+		<!-- 与事务管理器相关联 -->
+		<property name="transactionManager" ref="transactionManager"></property>
+		<!-- 事务描述 -->
+		<property name="transactionAttributes">
+			<props>
+				<prop key="add*">PROPAGATION_REQUIRED, -Exception</prop>
+				<prop key="modify*">PROPAGATION_REQUIRED,+com.exception.MyRuntimeException</prop>
+				<prop key="del*">PROPAGATION_REQUIRED</prop>
+				<prop key="*">PROPAGATION_REQUIRED, readOnly</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<bean id="userDao" parent="transactionProxy">
+		<property name="target" ref="iUserDao">
+			<!-- 直接写bean来代替ref标签的链接方式
+			<bean class="com.dao.UserDaoImpl">
+				<property name="sessionFactory" ref="sessionFactory"></property>
+			</bean>
+			 ref标签的传统方式，需要单独写一个bean标签 -->
+			<!-- 
+			<ref bean="iUserDao"/>
+			 -->
+		</property>
+	</bean>
+	
+	<!-- 第三种配置事务的方法，拦截器 -->
+	<!-- 
+	<bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager" ref="transactionManager"></property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="add*">PROPAGATION_REQUIRED, -Exception</prop>
+				<prop key="modify*">PROPAGATION_REQUIRED, +com.exception.MyRuntimeException</prop>
+				<prop key="del*">PROPAGATION_REQUIRED</prop>
+				<prop key="*">PROPAGATION_REQUIRED, readOnly</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<bean id="proxyFactory" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		通过这个拦截器，我们可以创建一个代理，不局限于事务
+		<property name="interceptorNames">
+			<list>
+				<value>transactionInterceptor</value>
+			</list>
+		</property>
+		<property name="beanNames">
+			<list>
+				<value>*Dao</value>
+			</list>
+		</property>
+	</bean>
+	 -->
+	
+	<!-- 第四种配置事务的方法，注解 -->
+	<!-- 开始事务注解
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	 -->
+</beans>

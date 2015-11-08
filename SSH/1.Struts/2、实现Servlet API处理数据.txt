@@ -1,0 +1,125 @@
+一、使用非IOC方式访问Servlet API
+UserAction01.java
+
+public class UserAction01 extends ActionSupport {
+	
+	private String username;
+	private String password;
+	private Map<String, Object> request;
+	private Map<String, Object> session;
+	private Map<String, Object> application;	
+	
+	public String login(){
+		//获取对象
+		ActionContext ac=ActionContext.getContext();
+		request=(Map<String, Object>)ac.get("request");
+		session=ac.getSession();
+		application=ac.getApplication();
+		//保存数据
+		request.put("loginAddress", "您本次登录地点是：北京");
+		session.put("username",username);
+		application.put("online","当前在线人数：XXX");
+		//获取数据
+		System.out.println(request.get("loginAddress"));
+		System.out.println(session.get("username"));
+		System.out.println(application.get("online"));
+		return SUCCESS;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+}
+
+
+二、使用IOC方式访问Servlet API（提倡使用）
+
+控制反转IOC: Inversion of control   
+       -------在类的外部通过接口的方式来提供对象。控制部分转移到类外部。
+也叫作依赖注入DI：Dependency Injection
+       -------在本类外部通过注入的方式提供对象。
+public class UserAction02 extends ActionSupport implements RequestAware,SessionAware,ApplicationAware{
+
+	private String username;
+	private String password;
+	private Map<String, Object> request;
+	private Map<String, Object> session;
+	private Map<String, Object> application;
+	
+	public String login(){
+		//保存数据
+		request.put("loginAddress", "您本次登录地点是：北京");
+		session.put("username",username);
+		application.put("online","当前在线人数：XXX");
+		//获取数据
+		System.out.println(request.get("loginAddress"));
+		System.out.println(session.get("username"));
+		System.out.println(application.get("online"));
+		return SUCCESS;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	@Override
+	public void setApplication(Map<String, Object> application) {
+		this.application=application;
+	}
+	@Override
+	public void setSession(Map<String, Object> session) {
+		this.session=session;
+	}
+	@Override
+	public void setRequest(Map<String, Object> request) {
+		this.request=request;
+	}
+	
+}
+
+
+login_success.jsp
+
+<body>
+访问ServletAPI中的数据<br/>
+<br/>
+方法1：JSP内置对象<br/>
+<%=request.getAttribute("loginAddress") %><br/>
+欢迎您，<%=session.getAttribute("username") %><br/>
+<%=application.getAttribute("online") %><br/>
+<br/>
+方法2：EL表达式<br/>
+${request.loginAddress}<br/>
+欢迎您，${session.username}<br/>
+${application.online}<br/>
+<br/>
+方法3：Struts2标签<br/>
+<s:property value="#request.loginAddress"/><br/>
+<s:property value="#attr.loginAddress"/><br/>
+欢迎您，<s:property value="#session.username"/><br/>
+欢迎您，<s:property value="#attr.username"/><br/>
+<s:property value="#application.online"/><br/>
+<s:property value="#attr.online"/><br/>
+<br/>
+<s:debug/>
+</body>

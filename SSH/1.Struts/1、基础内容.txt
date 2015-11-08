@@ -1,0 +1,150 @@
+一、创建Action
+struts2_01hellostruts
+
+方式一：普通java类 public class HelloAction1{}
+方式二：实现Action接口 public class HelloAction2 implements Action{}
+方式三：继承ActionSupport类 public class HelloAction3 extends ActionSupport{}
+
+流程简述：
+
+url地址：http://localhost:8086/Struts2_01hellostruts/hello
+
+
+1、用户在访问地址时，产生http请求给了tomcat服务器。
+2、tomcat服务器根据url中的ContextPath（/Struts2_01hellostruts）来寻找对应的web application。寻找的根据是web项目的上下文路径context root
+（myeclipse：项目右键properties--myeclipse--project facets--web）
+3、然后找到项目对应的web.xml。
+4、所有的用户请求经过web.xml中的StrutsPrepareAndExecuteFilter核心控制器，由它决定哪个action来处理请求，以及返回什么结果。
+5、决定的依据是struts.xml。url中后半部分中的  /  对应struts.xml中的namespace，然后找到相应的action以及result。
+
+二、Action处理业务请求
+1、利用Action属性方式
+	private String userName;
+	private String password;
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String execute() throws Exception {
+		return "success";		
+	}
+
+2、JavaBean方式（需要User.java）
+        private User user;
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+3、ModelDrive方式（需要User.java）
+	public class UserAction3 implements ModelDriven {
+	private User user=new User();
+	@Override
+	public User getModel() {
+		return user;
+	}
+	public String execute(){
+		return "success";
+	}
+4、使用method属性（在struts.xml中配置）
+	<action name="house_add" class="com.pb.web.action.HouseAction" method="add" >
+
+5、使用动态方法调用（在jsp中修改）
+jsp:	<form action="house!add" method="post">	
+
+xml:	<action name="house" class="com.pb.web.action.HouseAction">
+
+	<!--house为Action的name add则为method -->
+	<!-- 注意：当struts.XML中的name和namespace的值改变后，此处Action的路径也要调整。-->
+
+6、使用通配符简化配置(在struts.xml中配置)
+	<action name="house_*" class="com.pb.web.action.HouseAction" method="{1}">
+		<result>/house_{1}_success.jsp</result>
+	</action>
+	<!-- *  取代 {1}，两者等同 -->
+
+注：<default-action-ref name="index" />      <!--默认Action，如果找不到要访问的Action，则访问名为index的Action -->
+	<action name="index">
+		<result>index.jsp</result>
+	</action>
+
+三、使用Result配置结果视图
+<package name="user" namespace="/user" extends="struts-default">
+        <action name="login" class="com.pb.web.action.UserAction">
+            <result name="success" type="dispatcher">    
+            	/loginSuccess.jsp       <!-- 最好写成绝对路径。 相对路径是相对于当前namespace去寻找，容易出错。-->
+            </result>
+        </action>
+    </package>
+
+ 注意：
+ 1、result的name属性默认为字符串类型的"success"  此处可以省略。
+  其次，name属性对应于UserAction的execute方法中的返回值，也可以自定义 （SUCCESS == "success"）
+ 2、result的type属性默认为字符串类型的"dispatcher"  此处可以省略。
+   dispatcher：表示转发，可以将用户请求转发到JSP或Servlet。一次请求的过程，参数可以传递并显示。
+   chain：   Action的链式处理，可以将用户请求转发到Action。
+   redirect：重定向，可以是JSP，Servlet或者Action（包括本应用程序的内部或外部）。两次请求，传递到参数丢失。
+   redirectAction：只能是Action，其次只能定向到程序内部的Action-->	
+ 3、一个action可能会有多个result。
+ 4、全局结果：最多一个；必须定义在所有action之前，被包内的所有action共享；但是优先级要低于action本身的result的优先级。
+   <global-results>
+    		<result name="error">/error.jsp</result>
+   </global-results>
+ 5、动态结果：
+	<action name="login" class="com.pb.web.action.UserAction" method="login">
+        	<result name="success" type="redirectAction">${nextDispose}</result> <!-- 利用redirectAction-->
+        	<result name="input">/login.jsp</result>
+        </action>
+
+------------------------------总结---------------------------------
+1、在struts.xml中，当namespace的值为空或者 不写此属性（默认为空）时，不管在JSP界面调用action时路径是怎么写的，只要有与XML中相匹配（同名）的action，均可调用成功。
+
+2、设置JSP中调用的Action的绝对路径：
+
+原因：
+JSP页面表单的action提交时写的是相对路径，这样每次在浏览器访问都是相对于上一次路径做查找，所以url会一直追加此相对路径
+
+Action的搜索顺序：
+http://localhost:8086/Struts2_05login/user/user/user/login  namespace从 /user/user/user 到 /user/user 再到 /user 最后是默认的namespace（namespace=""），此时只要有同名的action。均可调用。
+
+方式一：
+<form action="<%=request.getContextPath() %>/user/login" method="post"> 
+
+方式二：基于设置的基链接来寻找action
+提前声明
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+%>
+并在<head>中添加如下代码，为页面添加基链接。
+<base href="<%=basePath%>">
+
+注释：
+basepath = 当前页面使用的协议（http）+"://"+ 当前服务器的名字（localhost）+":"+当前服务器的端口号（8086）+ 当前web应用的上下文
+
+==========》绝对路径：http://localhost:8086/Struts2_05login
+
+3、struts异常处理：声明一个公共包，设置全局异常映射。再由其他包继承。
+struts.xml
+<package name="base" namespace="/base" extends="struts-default">
+    	<global-results>
+    		<result name="error">/error.jsp</result>
+    	</global-results>
+    	<global-exception-mappings>
+    		<exception-mapping result="error" exception="java.lang.NullPointerException"></exception-mapping>
+    		<exception-mapping result="error" exception="java.sql.SQLException"></exception-mapping>
+    	</global-exception-mappings>
+</package>
+
+<package name="house" namespace="/house" extends="base">

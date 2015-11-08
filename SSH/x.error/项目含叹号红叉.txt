@@ -1,0 +1,28 @@
+1、Eclipse导入工程后工程上显示一个小红叉，但工程里没有文件错误。
+显示Target runtime Apache Tomcat v6.0 is not defined.
+错误解决方法：
+Eclipse导入工程后工程上显示一个小红叉，但工程里没有文件错误，也没有语法错误，百思不得其解啊，后来在网上找了一些资料说是项目引用的类库路径有问题。【项目】->【右键】->【build path】->【configure build path】->【libraries】，查看一下引用的类库路径。网上都说是因为这里引用错误引起的，但是我在项目导入的时候做的第一件事情就是修改这里的library，因此不是这个原因。
+
+在problems中显示错误是：Target runtime Apache Tomcat 6.0 is not defined. 在网上查了一下终于找到解决方法。方法是：在工程目录下的.settings文件夹里，打开org.eclipse.wst.common.project.facet.core.xml文件，其内容是：
+
+<?xml version="1.0" encoding="UTF-8"?>
+<faceted-project>
+  <runtime name="Apache Tomcat v7.0"/>
+  <fixed facet="jst.web"/>
+  <fixed facet="wst.jsdt.web"/>
+  <fixed facet="java"/>
+  <installed facet="java" version="1.7"/>
+  <installed facet="jst.web" version="3.0"/>
+  <installed facet="jst.web.jstl" version="1.2.1"/>
+  <installed facet="wst.jsdt.web" version="1.0"/>
+</faceted-project>
+
+这通常是由于导入别人的项目导致的，而非在自己的PC上创建的项目。
+打开自己已有的项目或者是新建一个WEB项目，查看相同的文件，复制粘贴即可。
+
+
+2、项目上有红色叹号。
+build path - configure - library - jre system library(unbound) 
+
+解决方法：重新配置jre system library：remove jre system library -- add library ---jre system library -- install jres ---
+选择JDK（standard vm --- bin之上即可）

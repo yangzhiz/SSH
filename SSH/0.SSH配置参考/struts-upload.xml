@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+	<!-- 文件上传 -->
+	<package name="upload" namespace="/file" extends="struts-default">
+		<!-- 单文件上传 -->
+		<action name="upload" class="uploadAction">
+			<result name="success">/success.jsp</result>
+			<result name="error">/error.jsp</result>
+			<result name="input">/index.jsp</result>
+			<interceptor-ref name="fileUpload">
+				<!-- 设置单文件的最大长度 -->
+				<param name="maximumSize">10000000</param>
+				<!-- 允许文件的类型txt、doc、docx  tomcat的web.xml文件 -->
+				<param name="allowedTypesSet">text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document</param>
+			</interceptor-ref>
+			<!-- 如果使用拦截器，必须显示调用struts2的默认拦截器。如下面。不然后报空指针错。无法继续执行 -->
+			<interceptor-ref name="defaultStack"></interceptor-ref>
+		</action>
+		
+		<!-- 多文件上传 -->
+		<action name="uploads" class="com.lzq.action.UploadsAction">
+			<result name="success">/success.jsp</result>
+			<result name="error">/error.jsp</result>
+		</action>
+		
+		<!-- 文件下载 -->
+		<action name="download" class="com.lzq.action.DownLoadAction">
+			<!-- type="stream"：result以流的形式返回 -->
+			<result name="success" type="stream">
+				<param name="inputName">fileInput</param>
+				<param name="contentDisposition">attachment;filename="${fileName }"</param>
+			</result>
+		</action>
+	</package>
+</struts>

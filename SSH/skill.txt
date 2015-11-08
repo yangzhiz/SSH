@@ -1,0 +1,10 @@
+1、ctrl+点击类名 可直接打开类文件
+   必要时需要添加源码：Attach Source--External location--External Folder--例如找到struts-2.3.24.1.jar包存放的文件夹--src--按需求找。
+
+2、xml自动提示 alt+/ 
+   设置方法：myeclipse工具栏---window---preferences---xml catalog---add---其中location为struts2.3.24.1解压以后的lib文件夹中struts2-core-2.3.24.1中的struts-2.3.dtd文件；key type =uri;key为struts.xml为文件中开头的"http://struts.apache.org/dtds/struts-2.3.dtd"此处的struts-2.3.dtd与上面对应。之后OK
+
+3、myeclipse下使用Tomcat，使用 debug server 可以在修改类文件后，不用重启服务器即可看到修改后的效果。
+
+4、myeclipse快捷键 Ctrl + Shift + s ：sort members 可以为类成员排序
+                   Ctrl + Shift + f : 格式化代码。规范格式。

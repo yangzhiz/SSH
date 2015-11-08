@@ -1,0 +1,32 @@
+Struts的四个主题：struts-2.3.24.1\lib\struts2-core-2.3.24.1\template
+主题文件夹内的ftl文件即为模板。
+
+struts.xml
+
+    <constant name="struts.ui.theme" value="simple" />
+    <constant name="struts.ui.theme" value="xhtml" />
+    <constant name="struts.ui.theme" value="archive" />
+    <constant name="struts.ui.theme" value="css_xhtml" />
+
+或者：
+<s:form action="add" method="post" theme="simple">
+	房屋标题：<s:textfield id="title" name="title" value=""></s:textfield><br><br>
+	房屋类型：<s:select name="houseType" list="types" listKey="typeId" listValue="type"/><br><br>
+	房屋地址：<s:doubleselect name="district" list="map.keySet()" listKey="districtId" listValue="districtName"
+	doubleName="street" doubleList="map.get(top)" doubleListKey="streetId" doubleListValue="streetName"/><br><br>
+	<br/>
+	发布时间：<sx:datetimepicker name="timer" label=""/><br/><br/>
+	备注：<s:textarea value="请添加备注信息......" name="remark"></s:textarea><br/><br/>
+	<s:submit value="发布信息"></s:submit>
+</s:form>
+
+
+数据回显：用chain，而不要重定向。
+
+<action name="add" class="com.pb.web.action.AddAction">
+            <result>/addSuccess.jsp</result> 
+            <result type="chain" name="error">
+            	<param name="actionName">house</param>
+            	<param name="namespace">/</param>
+            </result>
+        </action>

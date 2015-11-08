@@ -1,0 +1,2 @@
+1、java.lang.ClassNotFoundException
+ 解决方法：项目右键properties---myeclipse---deployment assembly---add--java build path entries--userlibrary(strutslib)（）如果之前设置过的话

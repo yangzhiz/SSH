@@ -1,0 +1,88 @@
+一、OGNL是什么？
+    Object Graph Navigation Language 对象图导航语言（Struts默认表达式语言，同EL）
+
+-------------------------<s:property value=   />----------------------------
+
+
+二、OGNL中的debug标签的使用   <s:debug/>
+
+1、Value Stack Contents   -----值栈：OGNL可以直接访问。
+<s:property value="house.title"/>
+
+2、Stack Context          -----栈的上下文:ONGL通过 # 访问。
+These items are available using the #key notation  
+<s:property value="#request.r1"/>
+
+三、OGNL访问集合：List Map Set（set是无序的，可以通过转化为数组来取具体索引的值）
+1、java
+public class OgnlAction extends ActionSupport {
+	private List<Street> streetsList;
+	private Map<String,Street> streetsMap;
+	private Set<Street> streetsSet;
+
+	public List<Street> getStreetsList() {
+		return streetsList;
+	}
+
+	public Map<String,Street> getStreetsMap() {
+		return streetsMap;
+	}
+
+	public Set<Street> getStreetsSet() {
+		return streetsSet;
+	}
+
+	public void setStreetsList(List<Street> streetsList) {
+		this.streetsList = streetsList;
+	}
+
+	public void setStreetsMap(Map<String,Street> streetsMap) {
+		this.streetsMap = streetsMap;
+	}
+
+	public void setStreetsSet(Set<Street> streetsSet) {
+		this.streetsSet = streetsSet;
+	}
+	
+	public String execute() throws Exception {
+		streetsList=new ArrayList<Street>();
+		streetsList.add(new Street(1,"成府一路"));
+		streetsList.add(new Street(2,"成府二 路"));
+		streetsList.add(new Street(3,"成府三路"));
+		
+		streetsMap=new HashMap<String,Street>();
+		streetsMap.put("m1",new Street(4,"成府四路"));
+		streetsMap.put("m2",new Street(5,"成府五路"));
+		
+		streetsSet=new HashSet<Street>();
+		streetsSet.add(new Street(6,"成府六路"));
+		streetsSet.add(new Street(7,"成府七路"));
+		return SUCCESS;
+	}
+}
+
+2、JSP:
+<body>
+<h1>OGNL访问集合</h1>
+访问List：<s:property value="streetsList"/> <br>
+访问List中第一个元素：<s:property value="streetsList[0].streetName"/> <br>
+List的大小：<s:property value="streetsList.size()"/> <br>
+List是否为空：<s:property value="streetsList.isEmpty()"/> <br>
+OGNL可以构造List:<s:property value="{1,2,3}"/><br>
+OGNL构造List中的第一个值:<s:property value="{1,2,3}[0]"/><br>
+<hr>
+访问Map：<s:property value="streetsMap"/> <br>
+访问Map中第一个元素：<s:property value="streetsMap['m1'].streetName"/>| <s:property value="streetsMap.m1.streetName"/><br>
+Map的所有键：<s:property value="streetsMap.keys"/><br>
+Map的所有值：<s:property value="streetsMap.values"/><br>
+Map的大小：<s:property value="streetsMap.size()"/> <br>
+Map是否为空：<s:property value="streetsMap.isEmpty()"/> <br>
+OGNL可以构造Map:<s:property value="#{'k1':'v1', 'k2':'v2'}"/><br>
+OGNL构造Map中的第一个值:<s:property value="#{'k1':'v1', 'k2':'v2'}['k1']"/>|<s:property value="#{'k1':'v1', 'k2':'v2'}.k1"/><br>
+<hr>
+访问Set：<s:property value="streetsSet"/> <br>
+访问Set中第一个元素：<s:property value="streetsSet.toArray()[0].streetName"/> <br>
+Set的大小：<s:property value="streetsSet.size()"/> <br>
+Set是否为空：<s:property value="streetsSet.isEmpty()"/> <br>
+<s:debug/>
+</body>
